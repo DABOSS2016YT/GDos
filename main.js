@@ -82,7 +82,21 @@ const PUBKEY_B64 = (() => {
   return 'MCowBQYDK2VwAyEA/HpdO6U1Hh+2jvGzvP7m+eJ9bNdD5n3+GQ+EEMV9i94=';
 })();
 
-const APP_VERSION = app.getVersion();
+// Version: read from userData/version.json (written after each update install).
+// Falls back to package.json so the very first install always has a correct version.
+const VERSION_FILE = path.join(app.getPath('userData'), 'version.json');
+function readInstalledVersion() {
+  try {
+    const d = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
+    if (d && /^\d+\.\d+\.\d+/.test(d.version)) return d.version;
+  } catch(_) {}
+  return app.getVersion();
+}
+function writeInstalledVersion(v) {
+  try { fs.writeFileSync(VERSION_FILE, JSON.stringify({ version: v, ts: Date.now() })); }
+  catch(e) { logger.warn('Could not write version file: ' + e.message); }
+}
+const APP_VERSION = readInstalledVersion();
 const UPDATE_HOST = 'update.nezili.uk';
 const UPDATE_PATH = '/latest.json';
 const IS_PACKAGED = app.isPackaged;
@@ -151,24 +165,90 @@ function semverNewer(latest, current) {
 
 async function checkForUpdates() {
   splashSend('checking', { msg: 'Connecting to update server…' });
+  let raw;
   try {
-    const raw = await httpsGet(UPDATE_HOST, UPDATE_PATH);
+    raw = await httpsGet(UPDATE_HOST, UPDATE_PATH);
+  } catch(e) {
+    // Genuine network failure — couldn't reach server at all
+    logger.warn('Update check network error: ' + e.message);
+    return { networkError: true };
+  }
+  try {
     const manifest = JSON.parse(raw);
-    if (!manifest.version || !manifest.signature)
-      throw new Error('Invalid manifest from server');
-    if (manifest.timestamp && Date.now() - manifest.timestamp > 90 * 86400000)
-      throw new Error('Manifest too old — possible replay attack');
-    if (!verifyManifest(manifest))
-      throw new Error('Signature invalid — possible MITM attack');
+    if (!manifest.version || !manifest.signature) {
+      logger.warn('Update check: invalid manifest (missing fields)');
+      return { parseError: true };
+    }
+    if (manifest.timestamp && Date.now() - manifest.timestamp > 90 * 86400000) {
+      logger.warn('Update check: manifest too old, skipping');
+      return { parseError: true };
+    }
+    if (!verifyManifest(manifest)) {
+      // Signature mismatch — likely key mismatch between server and this build.
+      // Don't block launch over this — just skip the update silently.
+      logger.warn('Update check: signature invalid (key mismatch?) — skipping update, launching anyway');
+      return { parseError: true };
+    }
     return manifest;
   } catch(e) {
-    logger.warn('Update check failed: ' + e.message);
-    return null;
+    logger.warn('Update check parse error: ' + e.message);
+    return { parseError: true };
   }
 }
 
 // ── Update marker: written before quit, read on next launch ──────────────────
 const UPDATE_MARKER_FILE = path.join(app.getPath('userData'), 'pending-update.json');
+const CONSENT_FILE       = path.join(app.getPath('userData'), 'consent.json');
+
+// consent: { mode: 'online'|'offline', ts: epoch }
+function readConsent() {
+  try { return JSON.parse(fs.readFileSync(CONSENT_FILE, 'utf8')); } catch(_) { return null; }
+}
+function writeConsent(mode) {
+  fs.writeFileSync(CONSENT_FILE, JSON.stringify({ mode, ts: Date.now() }), 'utf8');
+}
+function isOnline() {
+  const c = readConsent(); return c && c.mode === 'online';
+}
+
+// ── Ping server once per launch (online mode only) ────────────────────────────
+async function sendPing() {
+  if (!isOnline()) return;
+  try {
+    const body = JSON.stringify({ version: APP_VERSION, platform: process.platform });
+    await new Promise((resolve, reject) => {
+      const req = https.request({
+        host: UPDATE_HOST, path: '/ping', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body), 'User-Agent': 'G-Dos/' + APP_VERSION }
+      }, res => { res.resume(); resolve(); });
+      req.setTimeout(8000, () => { req.destroy(); reject(new Error('ping timeout')); });
+      req.on('error', reject);
+      req.write(body); req.end();
+    });
+    logger.info('Ping sent');
+  } catch(e) { logger.warn('Ping failed: ' + e.message); }
+}
+
+// ── Error reporter (online mode only) ────────────────────────────────────────
+async function reportError(message, stack) {
+  if (!isOnline()) return;
+  try {
+    const body = JSON.stringify({ version: APP_VERSION, platform: process.platform, message: String(message||'').slice(0,500), stack: String(stack||'').slice(0,2000) });
+    await new Promise((resolve, reject) => {
+      const req = https.request({
+        host: UPDATE_HOST, path: '/error', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body), 'User-Agent': 'G-Dos/' + APP_VERSION }
+      }, res => { res.resume(); resolve(); });
+      req.setTimeout(8000, () => { req.destroy(); reject(); });
+      req.on('error', reject);
+      req.write(body); req.end();
+    });
+  } catch(_) {}
+}
+
+// Hook uncaught errors for reporting
+process.on('uncaughtException',  e => { logger.error('[uncaughtException] ' + e.message); reportError(e.message, e.stack); });
+process.on('unhandledRejection', e => { const m = e instanceof Error ? e.message : String(e); logger.error('[unhandledRejection] ' + m); reportError(m, e instanceof Error ? e.stack : ''); });
 
 function writeUpdateMarker(version) {
   try { fs.writeFileSync(UPDATE_MARKER_FILE, JSON.stringify({ version, ts: Date.now() })); }
@@ -180,7 +260,11 @@ function checkAndClearUpdateMarker() {
     if (!fs.existsSync(UPDATE_MARKER_FILE)) return null;
     const m = JSON.parse(fs.readFileSync(UPDATE_MARKER_FILE, 'utf8'));
     fs.unlinkSync(UPDATE_MARKER_FILE);
-    if (Date.now() - (m.ts || 0) < 10 * 60 * 1000) return m.version;
+    if (Date.now() - (m.ts || 0) < 10 * 60 * 1000) {
+      // Persist the new version so APP_VERSION is correct on next launch
+      writeInstalledVersion(m.version);
+      return m.version;
+    }
   } catch(_) {}
   return null;
 }
@@ -240,7 +324,7 @@ async function downloadUpdate(manifest) {
 
 function createSplash() {
   splashWin = new BrowserWindow({
-    width: 420, height: 360,
+    width: 420, height: 380,
     frame: false, resizable: false, center: true,
     backgroundColor: '#0f1624',
     show: false,
@@ -262,6 +346,35 @@ function createSplash() {
 }
 
 async function runSplashFlow() {
+  // ── Consent gate: show policy if user hasn't decided yet ─────────────────
+  const consent = readConsent();
+  if (!consent) {
+    // Resize splash to fit consent card
+    if (splashWin && !splashWin.isDestroyed()) {
+      splashWin.setSize(460, 420, false);
+      splashWin.center();
+    }
+    splashWin.webContents.send('splash-show-consent');
+    const choice = await waitForIPC('consent-choice');
+    writeConsent(choice === 'accept' ? 'online' : 'offline');
+    // Resize back for update states
+    if (splashWin && !splashWin.isDestroyed()) {
+      splashWin.setSize(420, 380, false);
+      splashWin.center();
+    }
+  }
+
+  // Offline mode: skip all network calls, go straight to launch
+  if (!isOnline()) {
+    splashSend('launching', {});
+    await new Promise(r => setTimeout(r, 600));
+    launchMainWindow();
+    return;
+  }
+
+  // ── Ping server (fire and forget) ────────────────────────────────────────
+  sendPing();
+
   // If we just ran an installer, skip straight to launch — don't re-check
   const justUpdated = checkAndClearUpdateMarker();
   if (justUpdated) {
@@ -273,14 +386,17 @@ async function runSplashFlow() {
   }
 
   let manifest = null;
-  try { manifest = await checkForUpdates(); } catch(_) {}
+  const result = await checkForUpdates();
 
-  if (!manifest) {
+  if (result && result.networkError) {
+    // Real network failure — show error and let user retry or skip
     splashSend('error', { msg: 'Could not reach the update server. Check your connection.' });
     const errChoice = await waitForSplashChoice(['skip', 'retry']);
     if (errChoice === 'retry') {
-      try { manifest = await checkForUpdates(); } catch(_) {}
-      if (!manifest) {
+      const result2 = await checkForUpdates();
+      if (result2 && !result2.networkError && !result2.parseError) {
+        manifest = result2;
+      } else {
         splashSend('error', { msg: 'Still cannot reach update server. Launching anyway.' });
         await new Promise(r => setTimeout(r, 1500));
         launchMainWindow();
@@ -292,7 +408,11 @@ async function runSplashFlow() {
       launchMainWindow();
       return;
     }
+  } else if (result && !result.parseError) {
+    // Good manifest
+    manifest = result;
   }
+  // parseError = connected but couldn't verify — just launch silently
 
   if (manifest && semverNewer(manifest.version, APP_VERSION)) {
     splashSend('available', {
@@ -322,6 +442,12 @@ async function runSplashFlow() {
   splashSend('launching', {});
   await new Promise(r => setTimeout(r, 500));
   launchMainWindow();
+}
+
+function waitForIPC(channel) {
+  return new Promise(resolve => {
+    ipcMain.once(channel, (_, value) => resolve(value));
+  });
 }
 
 function waitForSplashChoice(expected) {
@@ -438,6 +564,21 @@ function buildMenu() {
       { label: 'History Panel',                                         click: s('historyPanel') },
     ]},
     { label: 'Help', submenu: [
+      { label: 'Privacy Settings\u2026', click: async () => {
+          const c = readConsent();
+          const mode = c ? c.mode : 'not set';
+          const { response } = await dialog.showMessageBox(mainWin || null, {
+            type: 'info', title: 'Privacy Settings',
+            message: 'Current mode: ' + (mode === 'online' ? 'Online (telemetry enabled)' : mode === 'offline' ? 'Offline (no network calls)' : 'Not configured'),
+            detail: 'Reset to show the privacy consent screen on next launch.',
+            buttons: ['Reset Privacy Settings', 'Cancel'], defaultId: 1, cancelId: 1
+          });
+          if (response === 0) {
+            try { fs.unlinkSync(CONSENT_FILE); } catch(_) {}
+            dialog.showMessageBox(mainWin||null, { type:'info', title:'Reset', message:'Privacy preference cleared. Restart G-Dos to reconfigure.', buttons:['OK'] });
+          }
+        }
+      },
       { label: 'Check for Updates\u2026', click: () => {
           if (mainWin) mainWin.webContents.send('menu', 'checkForUpdates');
         }
@@ -484,6 +625,20 @@ app.on('activate', () => { if (!mainWin && !splashWin) createSplash(); });
 ipcMain.handle('showSaveDialog',  (_, opts)       => dialog.showSaveDialog(mainWin, opts));
 ipcMain.handle('showOpenDialog',  (_, opts)       => dialog.showOpenDialog(mainWin, opts));
 ipcMain.handle('setTitle',        (_, t)          => { if (mainWin) mainWin.setTitle(t); });
+
+ipcMain.handle('resetConsent', async () => {
+  try { fs.unlinkSync(CONSENT_FILE); } catch(_) {}
+  dialog.showMessageBox(mainWin, {
+    type: 'info', title: 'Privacy Settings Reset',
+    message: 'Your privacy preference has been reset.',
+    detail: 'G-Dos will show the privacy consent screen on next launch.',
+    buttons: ['OK']
+  });
+});
+
+ipcMain.handle('getConsentMode', () => {
+  const c = readConsent(); return c ? c.mode : null;
+});
 
 ipcMain.handle('triggerUpdateCheck', async () => {
   const manifest = await checkForUpdates();

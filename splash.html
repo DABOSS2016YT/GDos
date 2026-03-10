@@ -5,99 +5,142 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;user-select:none}
-body{
-  background:#0f1624;
-  font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:#c9d6e3;
-}
-.logo{
-  font-size:28px;font-weight:700;letter-spacing:.06em;color:#e2eaf3;
-  margin-bottom:6px;
-}
-.tagline{font-size:11px;color:#3a5a7a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:40px}
-.card{
-  width:320px;background:#141f30;border:1px solid #1e3350;border-radius:12px;
-  padding:28px 30px;display:flex;flex-direction:column;align-items:center;gap:14px;
-}
-.spinner{
-  width:32px;height:32px;border:2.5px solid #1e3350;border-top-color:#3b82f6;
-  border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;
-}
+body{background:#0f1624;font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c9d6e3}
+.logo{font-size:26px;font-weight:700;letter-spacing:.06em;color:#e2eaf3;margin-bottom:4px}
+.tagline{font-size:10px;color:#3a5a7a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px}
+.card{width:420px;background:#141f30;border:1px solid #1e3350;border-radius:12px;padding:26px 28px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.spinner{width:30px;height:30px;border:2.5px solid #1e3350;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .state-title{font-size:14px;font-weight:600;color:#e2eaf3;text-align:center}
-.state-sub{font-size:11.5px;color:#4a7aaa;text-align:center;line-height:1.6;max-width:260px}
-.ver-row{font-size:11px;font-family:monospace;color:#3a5a7a;text-align:center}
+.state-sub{font-size:11.5px;color:#4a7aaa;text-align:center;line-height:1.6;max-width:360px}
+.ver-row{font-size:10.5px;font-family:monospace;color:#3a5a7a;text-align:center}
 .bar-wrap{width:100%;height:3px;background:#1e3350;border-radius:2px;overflow:hidden}
 .bar-fill{height:100%;background:#3b82f6;border-radius:2px;width:0%;transition:width .25s}
 .btns{display:flex;gap:10px;width:100%;margin-top:4px}
-.btn{flex:1;padding:9px 0;border-radius:7px;border:none;cursor:pointer;
-  font-size:12.5px;font-weight:600;font-family:inherit;transition:.15s}
-.btn-primary{background:#2563eb;color:#fff}
-.btn-primary:hover{background:#1d4ed8}
-.btn-secondary{background:#141f30;color:#4a7aaa;border:1px solid #1e3350}
-.btn-secondary:hover{background:#1a2840;color:#7aaac8}
-.icon{font-size:26px;line-height:1}
-.icon.ok{color:#22c55e}
-.icon.err{color:#ef4444}
-.icon.upd{color:#3b82f6}
-.err-detail{font-size:10px;color:#3a5a7a;text-align:center;max-width:260px;line-height:1.5;word-break:break-word}
-.version-pill{
-  position:absolute;bottom:16px;
-  font-size:10px;color:#1e3350;letter-spacing:.04em;
-}
+.btn{flex:1;padding:9px 0;border-radius:7px;border:none;cursor:pointer;font-size:12.5px;font-weight:600;font-family:inherit;transition:.15s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:#141f30;color:#4a7aaa;border:1px solid #1e3350}.btn-secondary:hover{background:#1a2840;color:#7aaac8}
+.icon{font-size:24px;line-height:1}
+.icon.err{color:#ef4444}.icon.upd{color:#3b82f6}
+.err-detail{font-size:10.5px;color:#3a5a7a;text-align:center;max-width:360px;line-height:1.5}
+.version-pill{position:absolute;bottom:14px;font-size:10px;color:#1e3350;letter-spacing:.04em}
+
+/* TOS card */
+.tos-card{width:440px;background:#141f30;border:1px solid #1e3350;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:16px}
+.tos-title{font-size:15px;font-weight:700;color:#e2eaf3}
+.tos-sub{font-size:11.5px;color:#4a7aaa;line-height:1.6}
+.tos-link{display:inline;background:none;border:none;color:#60a5fa;font-size:11.5px;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline}
+.tos-link:hover{color:#93c5fd}
+.tos-continue{width:100%;padding:11px;border-radius:7px;border:none;background:#2563eb;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s;margin-top:4px}
+.tos-continue:hover{background:#1d4ed8}
+.tos-offline{width:100%;padding:9px;border-radius:7px;border:1px solid #1e3350;background:transparent;color:#4a7aaa;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s;margin-top:6px}
+.tos-offline:hover{background:#1a2840;color:#7aaac8;border-color:#2a4a6a}
+.tos-note{font-size:10px;color:#2a4a6a;text-align:center;line-height:1.5}
+
+/* TOS popup overlay */
+.tos-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100}
+.tos-popup{width:420px;max-height:500px;background:#0f1624;border:1px solid #1e3350;border-radius:10px;display:flex;flex-direction:column}
+.tos-popup-head{padding:16px 20px;border-bottom:1px solid #1e3350;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tos-popup-head h3{font-size:13px;font-weight:700;color:#e2eaf3}
+.tos-close{background:none;border:none;color:#4a7aaa;font-size:18px;cursor:pointer;line-height:1;padding:0}
+.tos-close:hover{color:#e2eaf3}
+.tos-popup-body{padding:18px 20px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:#1e3350 transparent}
+.tos-popup-body::-webkit-scrollbar{width:4px}.tos-popup-body::-webkit-scrollbar-thumb{background:#1e3350;border-radius:2px}
+.tos-section{margin-bottom:14px}
+.tos-section h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a7aaa;margin-bottom:5px}
+.tos-section p{font-size:11px;color:#4a7aaa;line-height:1.65}
+.tos-section p b{color:#7aadcc}
 </style>
 </head>
 <body>
 <div class="logo">G-Dos</div>
 <div class="tagline">Spreadsheet</div>
 
-<div class="card" id="card">
-
-  <div id="s-checking" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+<!-- Update / launch states -->
+<div class="card" id="cardUpdate">
+  <div id="s-checking" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
     <div class="spinner"></div>
-    <div class="state-title" id="check-title">Checking for updates…</div>
+    <div class="state-title" id="check-title">Checking for updates&#8230;</div>
     <div class="state-sub" id="check-sub">Connecting to update server</div>
   </div>
-
-  <div id="s-available" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
-    <div class="icon upd">↓</div>
+  <div id="s-available" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+    <div class="icon upd">&#8595;</div>
     <div class="state-title">Update available</div>
     <div class="state-sub" id="avail-sub"></div>
     <div class="ver-row" id="avail-ver"></div>
-    <div class="bar-wrap" id="dl-bar-wrap" style="display:none">
-      <div class="bar-fill" id="dl-bar"></div>
-    </div>
-    <div class="state-sub" id="dl-sub" style="display:none"></div>
-    <div class="btns" id="avail-btns">
+    <div class="btns">
       <button class="btn btn-secondary" id="btn-skip">Launch anyway</button>
-      <button class="btn btn-primary"   id="btn-update">Update &amp; Launch</button>
+      <button class="btn btn-primary" id="btn-update">Update &amp; Launch</button>
     </div>
   </div>
-
-  <div id="s-downloading" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+  <div id="s-downloading" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
     <div class="spinner"></div>
-    <div class="state-title">Downloading update…</div>
-    <div class="state-sub" id="progress-sub">Starting download…</div>
+    <div class="state-title">Downloading update&#8230;</div>
+    <div class="state-sub" id="progress-sub">Starting&#8230;</div>
     <div class="bar-wrap" style="width:100%"><div class="bar-fill" id="progress-bar"></div></div>
   </div>
-
-  <div id="s-launching" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+  <div id="s-launching" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
     <div class="spinner"></div>
-    <div class="state-title">Starting G-Dos…</div>
+    <div class="state-title">Starting G-Dos&#8230;</div>
     <div class="state-sub">Just a moment</div>
   </div>
-
-  <div id="s-error" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
-    <div class="icon err">✕</div>
+  <div id="s-error" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+    <div class="icon err">&#10005;</div>
     <div class="state-title">Failed to connect</div>
     <div class="err-detail" id="err-detail">Could not reach the update server.</div>
     <div class="btns">
       <button class="btn btn-secondary" id="btn-retry">Retry</button>
-      <button class="btn btn-primary"   id="btn-skip-err">Launch anyway</button>
+      <button class="btn btn-primary" id="btn-skip-err">Launch anyway</button>
     </div>
   </div>
+</div>
 
+<!-- TOS consent card (shown on first launch) -->
+<div class="tos-card" id="cardTos" style="display:none">
+  <div class="tos-title">Welcome to G-Dos</div>
+  <div class="tos-sub">
+    To check for updates and send an anonymous usage ping (app version + OS only &#8212; no personal data), G-Dos needs to connect online.<br><br>
+    By clicking <b>Connect &amp; Continue</b> you agree to our <button class="tos-link" id="btn-view-tos">Terms of Service</button>.
+  </div>
+  <button class="tos-continue" id="btn-tos-accept">Connect &amp; Continue</button>
+  <button class="tos-offline" id="btn-tos-offline">Stay Offline</button>
+  <div class="tos-note">Offline mode: no network calls ever made. You can also use the portable .exe without installing.<br>Change this anytime in Help &#8594; Privacy Settings.</div>
+</div>
+
+<!-- TOS popup -->
+<div class="tos-overlay" id="tosOverlay" style="display:none">
+  <div class="tos-popup">
+    <div class="tos-popup-head">
+      <h3>Terms of Service &amp; Privacy</h3>
+      <button class="tos-close" id="btn-tos-close">&#10005;</button>
+    </div>
+    <div class="tos-popup-body">
+      <div class="tos-section">
+        <h4>What we collect</h4>
+        <p><b>App version</b> and <b>OS platform</b> are sent once per launch so we can understand which versions are in use. Your <b>IP address is immediately hashed</b> with a secret daily salt and discarded &#8212; the raw IP is never written anywhere and the hash cannot be reversed or linked across days.</p>
+      </div>
+      <div class="tos-section">
+        <h4>Error reports</h4>
+        <p>If G-Dos crashes, the <b>error message and stack trace</b> may be sent. File paths and personal data are stripped. This helps us fix bugs.</p>
+      </div>
+      <div class="tos-section">
+        <h4>What we do NOT collect</h4>
+        <p>We do <b>not</b> collect names, email addresses, file contents, keystrokes, location data, or any personally identifiable information.</p>
+      </div>
+      <div class="tos-section">
+        <h4>Data retention &amp; sharing</h4>
+        <p>Anonymous counts are kept for up to <b>12 months</b>. Error reports are capped at <b>30 entries</b>. Data is stored on our private server and is <b>never sold or shared</b>.</p>
+      </div>
+      <div class="tos-section">
+        <h4>Your rights (GDPR)</h4>
+        <p>You may withdraw consent at any time via <b>Help &#8594; Privacy Settings</b>. Because no personally identifiable data is stored there is nothing to retrieve or delete. You may lodge a complaint with the <b>ICO</b> (UK) or your national data protection authority.</p>
+      </div>
+      <div class="tos-section">
+        <h4>Use of the software</h4>
+        <p>G-Dos is provided as-is. We make no warranty of fitness for a particular purpose. By using G-Dos you agree not to use it for unlawful purposes.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="version-pill" id="ver-pill"></div>
@@ -105,60 +148,80 @@ body{
 <script>
 const { ipcRenderer } = require('electron');
 
-function show(id) {
-  ['s-checking','s-available','s-downloading','s-launching','s-error']
-    .forEach(s => document.getElementById(s).style.display = 'none');
-  document.getElementById(id).style.display = 'flex';
-  document.getElementById(id).style.flexDirection = 'column';
-  document.getElementById(id).style.alignItems = 'center';
-  document.getElementById(id).style.gap = '14px';
-  document.getElementById(id).style.width = '100%';
+function showCard(id) {
+  ['cardUpdate','cardTos'].forEach(function(c) {
+    document.getElementById(c).style.display = c === id ? 'flex' : 'none';
+    if (c === id && c === 'cardTos') document.getElementById(c).style.flexDirection = 'column';
+  });
 }
 
-ipcRenderer.on('splash-version', (_, v) => {
+function showState(id) {
+  ['s-checking','s-available','s-downloading','s-launching','s-error'].forEach(function(s) {
+    document.getElementById(s).style.display = 'none';
+  });
+  var t = document.getElementById(id);
+  t.style.display = 'flex'; t.style.flexDirection = 'column';
+  t.style.alignItems = 'center'; t.style.gap = '12px'; t.style.width = '100%';
+}
+
+ipcRenderer.on('splash-version', function(_, v) {
   document.getElementById('ver-pill').textContent = 'v' + v;
 });
 
-ipcRenderer.on('splash-state', (_, state, data) => {
+ipcRenderer.on('splash-show-consent', function() {
+  showCard('cardTos');
+});
+
+ipcRenderer.on('splash-state', function(_, state, data) {
+  showCard('cardUpdate');
   if (state === 'checking') {
-    show('s-checking');
+    showState('s-checking');
     if (data && data.msg) document.getElementById('check-sub').textContent = data.msg;
-  }
-  else if (state === 'available') {
-    show('s-available');
+  } else if (state === 'available') {
+    showState('s-available');
     document.getElementById('avail-sub').textContent =
-      'Version ' + data.version + ' is available' + (data.notes ? ' — ' + data.notes : '') + '.';
+      'Version ' + data.version + ' is available' + (data.notes ? ' \u2014 ' + data.notes : '') + '.';
     document.getElementById('avail-ver').textContent =
-      'Current: v' + data.current + '  →  New: v' + data.version;
-  }
-  else if (state === 'downloading') {
-    show('s-downloading');
-    const pct  = data.pct  || 0;
-    const mbDl = data.mbDl || '0.0';
-    const mbTot= data.mbTot|| '?';
-    document.getElementById('progress-bar').style.width = pct + '%';
+      'Current: v' + data.current + '  \u2192  New: v' + data.version;
+  } else if (state === 'downloading') {
+    showState('s-downloading');
+    document.getElementById('progress-bar').style.width = (data.pct || 0) + '%';
     document.getElementById('progress-sub').textContent =
-      pct + '%  ·  ' + mbDl + ' / ' + mbTot + ' MB';
-  }
-  else if (state === 'launching') {
-    show('s-launching');
-  }
-  else if (state === 'error') {
-    show('s-error');
-    document.getElementById('err-detail').textContent = data && data.msg
-      ? data.msg : 'Could not reach the update server.';
-  }
-  else if (state === 'up-to-date') {
-    show('s-checking');
+      (data.pct || 0) + '%  \u00b7  ' + (data.mbDl || '0.0') + ' / ' + (data.mbTot || '?') + ' MB';
+  } else if (state === 'launching') {
+    showState('s-launching');
+  } else if (state === 'error') {
+    showState('s-error');
+    document.getElementById('err-detail').textContent = (data && data.msg) || 'Could not reach the update server.';
+  } else if (state === 'up-to-date') {
+    showState('s-checking');
     document.getElementById('check-title').textContent = 'Up to date';
-    document.getElementById('check-sub').textContent = 'Launching…';
+    document.getElementById('check-sub').textContent = 'Launching\u2026';
   }
 });
 
-document.getElementById('btn-skip').onclick    = () => ipcRenderer.send('splash-choice', 'skip');
-document.getElementById('btn-update').onclick  = () => ipcRenderer.send('splash-choice', 'update');
-document.getElementById('btn-retry').onclick   = () => ipcRenderer.send('splash-choice', 'retry');
-document.getElementById('btn-skip-err').onclick= () => ipcRenderer.send('splash-choice', 'skip');
+// TOS
+document.getElementById('btn-view-tos').onclick = function() {
+  document.getElementById('tosOverlay').style.display = 'flex';
+};
+document.getElementById('btn-tos-close').onclick = function() {
+  document.getElementById('tosOverlay').style.display = 'none';
+};
+document.getElementById('tosOverlay').onclick = function(e) {
+  if (e.target === this) this.style.display = 'none';
+};
+document.getElementById('btn-tos-accept').onclick = function() {
+  ipcRenderer.send('consent-choice', 'accept');
+};
+document.getElementById('btn-tos-offline').onclick = function() {
+  ipcRenderer.send('consent-choice', 'offline');
+};
+
+// Update buttons
+document.getElementById('btn-skip').onclick    = function() { ipcRenderer.send('splash-choice', 'skip'); };
+document.getElementById('btn-update').onclick  = function() { ipcRenderer.send('splash-choice', 'update'); };
+document.getElementById('btn-retry').onclick   = function() { ipcRenderer.send('splash-choice', 'retry'); };
+document.getElementById('btn-skip-err').onclick= function() { ipcRenderer.send('splash-choice', 'skip'); };
 </script>
 </body>
 </html>
