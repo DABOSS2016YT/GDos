@@ -245,7 +245,7 @@ Architecture:
 | -------- | ---------------- | ------------------------- |
 | Windows  | `.exe` installer | Standard installation     |
 | Windows  | `.exe` portable  | Runs without installation |
-| macOS    | `.dmg`           | Drag-and-drop install     |
+| macOS    | `.dmg`           | self-build                |
 | Linux    | `.AppImage`      | Portable executable       |
 | Linux    | `.deb`           | Debian / Ubuntu package   |
 
