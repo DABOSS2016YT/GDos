@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;user-select:none}
+body{
+  background:#0f1624;
+  font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#c9d6e3;
+}
+.logo{
+  font-size:28px;font-weight:700;letter-spacing:.06em;color:#e2eaf3;
+  margin-bottom:6px;
+}
+.tagline{font-size:11px;color:#3a5a7a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:40px}
+.card{
+  width:320px;background:#141f30;border:1px solid #1e3350;border-radius:12px;
+  padding:28px 30px;display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.spinner{
+  width:32px;height:32px;border:2.5px solid #1e3350;border-top-color:#3b82f6;
+  border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-title{font-size:14px;font-weight:600;color:#e2eaf3;text-align:center}
+.state-sub{font-size:11.5px;color:#4a7aaa;text-align:center;line-height:1.6;max-width:260px}
+.ver-row{font-size:11px;font-family:monospace;color:#3a5a7a;text-align:center}
+.bar-wrap{width:100%;height:3px;background:#1e3350;border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:#3b82f6;border-radius:2px;width:0%;transition:width .25s}
+.btns{display:flex;gap:10px;width:100%;margin-top:4px}
+.btn{flex:1;padding:9px 0;border-radius:7px;border:none;cursor:pointer;
+  font-size:12.5px;font-weight:600;font-family:inherit;transition:.15s}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:#141f30;color:#4a7aaa;border:1px solid #1e3350}
+.btn-secondary:hover{background:#1a2840;color:#7aaac8}
+.icon{font-size:26px;line-height:1}
+.icon.ok{color:#22c55e}
+.icon.err{color:#ef4444}
+.icon.upd{color:#3b82f6}
+.err-detail{font-size:10px;color:#3a5a7a;text-align:center;max-width:260px;line-height:1.5;word-break:break-word}
+.version-pill{
+  position:absolute;bottom:16px;
+  font-size:10px;color:#1e3350;letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+<div class="logo">G-Dos</div>
+<div class="tagline">Spreadsheet</div>
+
+<div class="card" id="card">
+
+  <div id="s-checking" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <div class="spinner"></div>
+    <div class="state-title" id="check-title">Checking for updates…</div>
+    <div class="state-sub" id="check-sub">Connecting to update server</div>
+  </div>
+
+  <div id="s-available" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <div class="icon upd">↓</div>
+    <div class="state-title">Update available</div>
+    <div class="state-sub" id="avail-sub"></div>
+    <div class="ver-row" id="avail-ver"></div>
+    <div class="bar-wrap" id="dl-bar-wrap" style="display:none">
+      <div class="bar-fill" id="dl-bar"></div>
+    </div>
+    <div class="state-sub" id="dl-sub" style="display:none"></div>
+    <div class="btns" id="avail-btns">
+      <button class="btn btn-secondary" id="btn-skip">Launch anyway</button>
+      <button class="btn btn-primary"   id="btn-update">Update &amp; Launch</button>
+    </div>
+  </div>
+
+  <div id="s-downloading" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <div class="spinner"></div>
+    <div class="state-title">Downloading update…</div>
+    <div class="state-sub" id="progress-sub">Starting download…</div>
+    <div class="bar-wrap" style="width:100%"><div class="bar-fill" id="progress-bar"></div></div>
+  </div>
+
+  <div id="s-launching" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <div class="spinner"></div>
+    <div class="state-title">Starting G-Dos…</div>
+    <div class="state-sub">Just a moment</div>
+  </div>
+
+  <div id="s-error" style="display:none;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <div class="icon err">✕</div>
+    <div class="state-title">Failed to connect</div>
+    <div class="err-detail" id="err-detail">Could not reach the update server.</div>
+    <div class="btns">
+      <button class="btn btn-secondary" id="btn-retry">Retry</button>
+      <button class="btn btn-primary"   id="btn-skip-err">Launch anyway</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="version-pill" id="ver-pill"></div>
+
+<script>
+const { ipcRenderer } = require('electron');
+
+function show(id) {
+  ['s-checking','s-available','s-downloading','s-launching','s-error']
+    .forEach(s => document.getElementById(s).style.display = 'none');
+  document.getElementById(id).style.display = 'flex';
+  document.getElementById(id).style.flexDirection = 'column';
+  document.getElementById(id).style.alignItems = 'center';
+  document.getElementById(id).style.gap = '14px';
+  document.getElementById(id).style.width = '100%';
+}
+
+ipcRenderer.on('splash-version', (_, v) => {
+  document.getElementById('ver-pill').textContent = 'v' + v;
+});
+
+ipcRenderer.on('splash-state', (_, state, data) => {
+  if (state === 'checking') {
+    show('s-checking');
+    if (data && data.msg) document.getElementById('check-sub').textContent = data.msg;
+  }
+  else if (state === 'available') {
+    show('s-available');
+    document.getElementById('avail-sub').textContent =
+      'Version ' + data.version + ' is available' + (data.notes ? ' — ' + data.notes : '') + '.';
+    document.getElementById('avail-ver').textContent =
+      'Current: v' + data.current + '  →  New: v' + data.version;
+  }
+  else if (state === 'downloading') {
+    show('s-downloading');
+    const pct  = data.pct  || 0;
+    const mbDl = data.mbDl || '0.0';
+    const mbTot= data.mbTot|| '?';
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-sub').textContent =
+      pct + '%  ·  ' + mbDl + ' / ' + mbTot + ' MB';
+  }
+  else if (state === 'launching') {
+    show('s-launching');
+  }
+  else if (state === 'error') {
+    show('s-error');
+    document.getElementById('err-detail').textContent = data && data.msg
+      ? data.msg : 'Could not reach the update server.';
+  }
+  else if (state === 'up-to-date') {
+    show('s-checking');
+    document.getElementById('check-title').textContent = 'Up to date';
+    document.getElementById('check-sub').textContent = 'Launching…';
+  }
+});
+
+document.getElementById('btn-skip').onclick    = () => ipcRenderer.send('splash-choice', 'skip');
+document.getElementById('btn-update').onclick  = () => ipcRenderer.send('splash-choice', 'update');
+document.getElementById('btn-retry').onclick   = () => ipcRenderer.send('splash-choice', 'retry');
+document.getElementById('btn-skip-err').onclick= () => ipcRenderer.send('splash-choice', 'skip');
+</script>
+</body>
+</html>
