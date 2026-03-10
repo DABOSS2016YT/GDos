@@ -2,30 +2,30 @@
 
 ## Supported Versions
 
-The following versions of this project currently receive security updates.
+All released versions of this project receive security updates.  
+Because the application includes an automatic update system, users are expected to stay on the latest version.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x     | :white_check_mark: |
-| < 1.0   | :x:                |
+| All versions | :white_check_mark: |
 
-Only the latest release branch is actively maintained. Older or modified builds may not receive security fixes.
+The current version at the time of writing is **1.0.1**, however the version number changes with each update. Users should allow the application to update automatically to ensure they receive the latest security fixes.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please report it privately so it can be addressed before public disclosure.
+If you discover a security vulnerability, please report it privately so it can be fixed before it becomes public.
 
-You can report issues through the following channels:
+You can report vulnerabilities through the following methods:
 
-Discord: doss1e.  
-Email: dossie@nezili.uk
+**Discord:** doss1e.  
+**Email:** dossie@nezili.uk
 
-Please include as much detail as possible when reporting a vulnerability, including:
+When reporting a vulnerability, please include:
 - A clear description of the issue
-- Steps to reproduce the problem
-- Potential impact if known
-- Screenshots or logs if available
+- Steps to reproduce it
+- Any relevant logs, screenshots, or proof of concept
+- The version of the application you are using
 
-Security updates are released whenever a vulnerability is detected or when a new security improvement is identified. The application includes an automatic updater that connects to the update server, allowing security fixes to be distributed as soon as they are available.
+Security updates are released whenever a vulnerability is detected or when a potential security improvement is identified. Because the application includes an automatic updater that connects to the update server, fixes can be distributed as soon as they are available.
 
-After a report is received, it will be reviewed and investigated. If the issue is confirmed, a fix will be developed and released through the normal update process.
+After a report is received, it will be reviewed and investigated. If confirmed, a fix will be developed and distributed through the automatic update system.
