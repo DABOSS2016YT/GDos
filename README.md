@@ -202,7 +202,116 @@ GitHub repository:
 https://github.com/DABOSS2016YT/GDos
 
 ---
+# Versions
 
+Each release of **G-Dos** is compiled for multiple platforms using Electron Builder.
+
+## v1.0.0
+
+First public release.
+
+### Windows
+
+* **Windows Installer (.exe)** — NSIS installer
+* **Windows Portable (.exe)** — portable standalone build
+
+Architecture:
+
+* x64
+
+### macOS
+
+* **DMG Installer (.dmg)**
+
+Architectures:
+
+* Intel (x64)
+* Apple Silicon (arm64)
+
+### Linux
+
+* **AppImage (.AppImage)** — portable Linux executable
+* **Debian Package (.deb)** — for Debian / Ubuntu based systems
+
+Architecture:
+
+* x64
+
+---
+
+# Platform Compatibility
+
+| Platform | Package Type     | Notes                     |
+| -------- | ---------------- | ------------------------- |
+| Windows  | `.exe` installer | Standard installation     |
+| Windows  | `.exe` portable  | Runs without installation |
+| macOS    | `.dmg`           | Drag-and-drop install     |
+| Linux    | `.AppImage`      | Portable executable       |
+| Linux    | `.deb`           | Debian / Ubuntu package   |
+
+---
+
+# System Requirements
+
+Minimum requirements for running G-Dos.
+
+| Component   | Requirement             |
+| ----------- | ----------------------- |
+| CPU         | 64-bit processor        |
+| RAM         | 4 GB recommended        |
+| Node Engine | ≥ 20                    |
+| OS          | Windows / macOS / Linux |
+
+---
+
+# Release Distribution
+
+Compiled builds are placed in:
+
+```
+/dist
+```
+
+Typical output files:
+
+```
+G-Dos Setup.exe
+G-Dos Portable.exe
+G-Dos-x64.AppImage
+g-dos_1.0.0_amd64.deb
+G-Dos-1.0.0.dmg
+```
+
+---
+
+# Building Manually
+
+Install dependencies:
+
+```
+npm install
+```
+
+Run the application:
+
+```
+npm start
+```
+
+Build for a specific platform:
+
+```
+npm run windows
+npm run mac
+npm run linux
+```
+
+Build all platforms:
+
+```
+npm run all
+```
+---
 # License
 
 See the repository for licensing information.
