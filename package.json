@@ -19,7 +19,7 @@
     "linux": "electron-builder --linux --publish never",
     "ubuntu": "electron-builder --linux deb --publish never",
     "debian": "electron-builder --linux deb --publish never",
-    "all": "electron-builder --win --mac --linux --publish never",
+    "all": "electron-builder --win --linux --publish never",
     "build:ui": "node -e \"const fs=require('fs');const b64=Buffer.from(fs.readFileSync('ui.html')).toString('base64');fs.writeFileSync('ui-b64.js','module.exports=\\''+b64+'\\';\\n');\""
   },
 
